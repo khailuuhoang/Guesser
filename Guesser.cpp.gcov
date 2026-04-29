@@ -1,0 +1,93 @@
+        -:    0:Source:Guesser.cpp
+        -:    0:Graph:Guesser.gcno
+        -:    0:Data:Guesser.gcda
+        -:    0:Runs:1
+        -:    1:#include "Guesser.h"
+        -:    2:#include <string>
+        -:    3:#include <cmath>
+        -:    4:
+        -:    5:using std::string;
+        -:    6:
+        -:    7:/*
+        -:    8:  Returns an whole number representing the distance between the guess,
+        -:    9:  provided as an argument, and the secret. The distance represents the number
+        -:   10:  of characters that would have to be changed at the same location to match
+        -:   11:  the other string. When the two strings are identical, the distance is 0,
+        -:   12:  but for each letter different, the distance increases by 1. When the
+        -:   13:  strings are different lengths, each of the extra characters in the longer
+        -:   14:  string also counts as an increase in 1 to the distance, up to the length of
+        -:   15:  the secret; in other words, if m_secret has a 10 characters and the guess
+        -:   16:  has 100, the distance is 10.
+        -:   17:*/
+       27:   18:unsigned int Guesser::distance(string guess){
+       27:   19:  int length_diff = 0;
+       27:   20:  if( guess.length() > m_secret.length() ){
+        3:   21:    length_diff += guess.length() - m_secret.length();
+        -:   22:  }
+       24:   23:  else if( guess.length() < m_secret.length() ){
+        4:   24:    length_diff += m_secret.length() - guess.length();
+        -:   25:  }
+      135:   26:  for(int i=0; i < m_secret.length() && i < guess.length(); i++ ){
+      108:   27:    if( m_secret.at(i) != guess.at(i) ){
+       29:   28:      length_diff++;
+        -:   29:    }
+        -:   30:  }
+       27:   31:  if( length_diff > m_secret.length() ){
+        1:   32:    length_diff = m_secret.length();
+        -:   33:  }
+       27:   34:  return length_diff;
+        -:   35:}
+        -:   36:
+        -:   37:/*
+        -:   38:  Constructor requires that the secret phrase is provided its value as
+        -:   39:  an argument. This secret will not change for the lifespan of an instance
+        -:   40:  of any Guesser object and must have a length of 32 characters or less,
+        -:   41:  otherwise, it will be truncated at that length.
+        -:   42:*/
+       24:   43:Guesser::Guesser(string secret){
+       24:   44:  if( secret.length() > 32 ){
+        1:   45:    m_secret = secret.substr(0, 32);
+        -:   46:  }
+        -:   47:  else{
+       23:   48:    m_secret = secret;
+        -:   49:  }
+       24:   50:  m_locked = false;
+       24:   51:  m_remaining = 3;
+       24:   52:}
+        -:   53:
+        -:   54:/*
+        -:   55:  Determines and returns whether the provided guess matches the secret
+        -:   56:  phrase. However, the function also returns false if the secret is locked,
+        -:   57:  which happens if either (or both): 
+        -:   58:    (A) there are no remaining guesses allowed
+        -:   59:    (B) the function detects brute force, as indicated by a guess that has a
+        -:   60:        distance greater than 2 from the secret
+        -:   61:  See the distance() functions for specifications regarding determining the 
+        -:   62:  distance between a guess and the secret.
+        -:   63:  
+        -:   64:  A Guesser object allows up to
+        -:   65:  three (3) consecutive guesses without a match. If three guesses are made
+        -:   66:  without any being a true match, the secret is locked. However, whenever
+        -:   67:  an unlocked secret is guessed with a true match, the guesses remaining
+        -:   68:  reset to three (3). If the secret is locked for any other reason, such
+        -:   69:  as a big distance in a guess, the count of remaining guesses should still
+        -:   70:  count down as usual to hide that the secret has been locked.
+        -:   71:*/
+       30:   72:bool Guesser::match(string guess){
+       30:   73:  if( m_remaining < 1 || m_locked ){
+        7:   74:    return false;
+        -:   75:  }
+       23:   76:  else if( guess != m_secret ){
+       15:   77:    unsigned int difference = distance(guess);
+       15:   78:    if( difference > 2 ){
+        2:   79:      m_locked = true;
+        -:   80:    }
+        -:   81:    else{
+       13:   82:      m_remaining--;
+        -:   83:    }
+       15:   84:    return false;
+        -:   85:  }
+        -:   86:  else{
+        8:   87:    return true;
+        -:   88:  }
+        -:   89:}
